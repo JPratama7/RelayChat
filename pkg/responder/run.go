@@ -9,12 +9,12 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"responder/pkg/responder/formatter"
-	"responder/pkg/responder/forwarder"
+	"responder/pkg/formatter"
 	"responder/pkg/responder/helper"
 	"responder/pkg/responder/message"
 	"responder/pkg/responder/postgres"
 	"responder/pkg/responder/store"
+	"responder/pkg/whatsapp"
 	"syscall"
 )
 
@@ -64,15 +64,15 @@ func Run() {
 		}
 		fmt.Printf("Pairing code: %s\n", code)
 	}
-	format := formatter.NewFormat()
 
 	senderPattern := `Sender:\s*(\d+)`
 	convPattern := `----Message----\n(.+)`
 
 	senderParser := regexp.MustCompile(senderPattern)
 	convParser := regexp.MustCompile(convPattern)
+	format := formatter.NewFormat("Sender:", "----Message----", senderParser, convParser)
 
-	forward := forwarder.NewMessage(client, types.NewJID(os.Getenv("PHONENUMDEST"), types.DefaultUserServer), format.FormatString)
+	forward := whatsapp.NewMessage(client, types.NewJID(os.Getenv("PHONENUMDEST"), types.DefaultUserServer), format)
 
 	err = helper.ConnectClient(client)
 	if err != nil {
