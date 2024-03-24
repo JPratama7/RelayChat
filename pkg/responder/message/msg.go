@@ -8,11 +8,17 @@ import (
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 	"responder/pkg/formatter"
-	"responder/pkg/responder"
 	"responder/pkg/responder/helper"
 )
 
-func EventListener(client *whatsmeow.Client, jidParser, convParser responder.Regex, forwarder responder.MessageInterface) func(event any) {
+type MessageInterface interface {
+	FormatText(ctx context.Context, jid types.JID, conv string)
+	Dest() types.JID
+	IsDest(jid types.JID) bool
+	Send(ctx context.Context, msg *waProto.Message)
+}
+
+func EventListener(client *whatsmeow.Client, jidParser, convParser formatter.Regex, forwarder MessageInterface) func(event any) {
 	return func(event any) {
 		switch e := event.(type) {
 		case *events.Message:
@@ -21,7 +27,7 @@ func EventListener(client *whatsmeow.Client, jidParser, convParser responder.Reg
 	}
 }
 
-func EventConsumer(client *whatsmeow.Client, jidParser, convParser responder.Regex, forwarder responder.MessageInterface, event *events.Message) {
+func EventConsumer(client *whatsmeow.Client, jidParser, convParser formatter.Regex, forwarder MessageInterface, event *events.Message) {
 	if event.Info.IsFromMe {
 		return
 	}

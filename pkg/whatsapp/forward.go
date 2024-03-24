@@ -5,16 +5,20 @@ import (
 	"go.mau.fi/whatsmeow"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/types"
-	"responder/pkg/responder"
 )
+
+type FormatterInterface interface {
+	FormatString(jid types.JID, conv string) *string
+	DecodeMessage(conv string) (jid types.JID, res string, err error)
+}
 
 type Message struct {
 	client    *whatsmeow.Client
 	dest      types.JID
-	formatter responder.FormatterInterface
+	formatter FormatterInterface
 }
 
-func NewMessage(client *whatsmeow.Client, dest types.JID, formatter responder.FormatterInterface) *Message {
+func NewMessage(client *whatsmeow.Client, dest types.JID, formatter FormatterInterface) *Message {
 	return &Message{client, dest, formatter}
 }
 
